@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { useState } from 'react'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterInput,setFilterInput] = useState('')
+  const [operationMessage,setOperationMessage] = useState({message:null,type:null})
 
   const hook = () => {
     personService.getAll().then((initialPersons) => {
@@ -21,14 +23,27 @@ const App = () => {
     const personToUpdate = persons.find(person => person.name === newName)
     const newPerson = { name: newName, number:newNumber }
     if (personToUpdate === undefined){
-      personService.create(newPerson).then(createdPerson => setPersons(persons.concat(createdPerson)))
+      personService
+      .create(newPerson)
+      .then(createdPerson =>{
+        setOperationMessage({message:`Added ${createdPerson.name}`,type:'success'})
+        setTimeout(() => setOperationMessage({message:null,type:null}),5000)
+        setPersons(persons.concat(createdPerson))
+      })
     } else {
       if (confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)){
         const personId = personToUpdate.id
         personService
         .update(personId,newPerson)
         .then((updatedPerson) => {
+          setOperationMessage({message:`Changed ${updatedPerson.name}'s number to ${updatedPerson.number}`,type:'success'})
+          setTimeout(() => setOperationMessage({message:null,type:null}),5000)
           setPersons(persons.map((p) => (p.id === personId ? updatedPerson : p)))
+        })
+        .catch(() => {
+          setOperationMessage({message:`Information of ${personToUpdate.name} has already been removed from server`,type:'failure'})
+          setTimeout(() => setOperationMessage({message:null,type:null}),5000)
+          setPersons(persons.filter(p => p.id !== personId))
         })
       }
     }
@@ -40,15 +55,24 @@ const App = () => {
     if (confirm(`Delete ${name} ?`)) {
       personService
       .deleteHTTP(id)
-      .then(setPersons(persons.filter(person => person.id !== id)))
+      .then(() => {
+        setOperationMessage({message:`Deleted ${name}`,type:'success'})
+        setTimeout(() => setOperationMessage({message:null,type:null}),5000)
+        setPersons(persons.filter(person => person.id !== id))
+      })
     }
   }
 
   const filterResult = persons.filter(person => person.name.toLowerCase().includes(filterInput))
 
+  const errorStyle = {
+    color:'red'
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={operationMessage.message} type={operationMessage.type}/>
       <Filter filterInput={filterInput} setFilterInput={setFilterInput}/>
       <h3>Add a new</h3>
       <PersonForm

@@ -1,0 +1,4 @@
+//Choose person ID here
+@ID = 4
+###
+GET http://localhost:3001/api/persons/{{ID}}

@@ -2,3 +2,6 @@
 sandbox/
 part2/part2-notes-frontend
 part2/countries/.env.local
+part3/simple-web-server/
+part3/part3-1
+**/node_modules/

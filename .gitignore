@@ -5,3 +5,4 @@ part2/countries/.env.local
 part3/simple-web-server/
 part3/part3-1
 **/node_modules/
+part2/countries/.vite/

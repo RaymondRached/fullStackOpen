@@ -1,4 +1,0 @@
-//Choose person ID here
-@ID = 3
-###
-DELETE http://localhost:3001/api/persons/{{ID}}

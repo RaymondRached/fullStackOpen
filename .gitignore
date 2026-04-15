@@ -7,3 +7,4 @@ part3/part3-1
 **/node_modules/
 part2/countries/.vite/
 part3/phonebook-backend/requests/
+**/.env

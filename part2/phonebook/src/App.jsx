@@ -23,27 +23,38 @@ const App = () => {
     const personToUpdate = persons.find(person => person.name === newName)
     const newPerson = { name: newName, number:newNumber }
     if (personToUpdate === undefined){
+      console.log(newPerson.number)
       personService
       .create(newPerson)
       .then(createdPerson =>{
         setOperationMessage({message:`Added ${createdPerson.name}`,type:'success'})
         setTimeout(() => setOperationMessage({message:null,type:null}),5000)
         setPersons(persons.concat(createdPerson))
+      }).catch(error => {
+        setOperationMessage({message:error.response.data.error,type:'failure'})
+        setTimeout(() => setOperationMessage({message:null,type:null}),5000)
       })
     } else {
       if (confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)){
         const personId = personToUpdate.id
+        console.log(personId,newPerson)
         personService
         .update(personId,newPerson)
         .then((updatedPerson) => {
+          console.log(updatedPerson)
           setOperationMessage({message:`Changed ${updatedPerson.name}'s number to ${updatedPerson.number}`,type:'success'})
           setTimeout(() => setOperationMessage({message:null,type:null}),5000)
           setPersons(persons.map((p) => (p.id === personId ? updatedPerson : p)))
         })
-        .catch(() => {
-          setOperationMessage({message:`Information of ${personToUpdate.name} has already been removed from server`,type:'failure'})
-          setTimeout(() => setOperationMessage({message:null,type:null}),5000)
-          setPersons(persons.filter(p => p.id !== personId))
+        .catch((error) => {
+          if (error.response.data.name === "ValidationError"){
+            setOperationMessage({message:error.response.data.error,type:'failure'})
+            setTimeout(() => setOperationMessage({message:null,type:null}),5000)
+          } else {
+            setOperationMessage({message:`Information of ${personToUpdate.name} has already been removed from server`,type:'failure'})
+            setTimeout(() => setOperationMessage({message:null,type:null}),5000)
+            setPersons(persons.filter(p => p.id !== personId))
+          }
         })
       }
     }
